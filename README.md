@@ -33,16 +33,40 @@ Today OpenLake runs as a standard S3 endpoint you can point any AWS SDK at.
 
 ## Key features
 
-| | |
-|---|---|
-| **S3 wire compatible** | SigV4 authentication; bucket and object CRUD; batch delete; `ListObjects` v1 and v2; multipart upload; multi version objects. Works with the AWS CLI, `boto3`, the `aws-sdk-*` crates, `mc`, and other S3 clients. |
-| **`io_uring` runtime** | [`compio`](https://github.com/compio-rs/compio) plus [`cyper`](https://github.com/compio-rs/cyper) / `cyper-axum`: hyper's HTTP/1.1 (and HTTP/2 for the cluster plane) on a completion based runtime. One pinned runtime per CPU, `SO_REUSEPORT` listeners, no tokio runtime spun up. |
-| **SIMD erasure coding** | [`reed-solomon-simd`](https://crates.io/crates/reed-solomon-simd) (FFT algorithm; SSSE3 / AVX2 / NEON auto detected). Shards are streamed stripe by stripe, so peak RAM per in flight PUT is one stripe, not the whole object. |
-| **MinIO `xl.meta` layout** | v1.x metadata format. Objects up to 128 KiB are inlined directly into `xl.meta`; larger ones are written as Reed Solomon shards across the set. |
-| **Distributed by erasure sets** | A flat pool of disks is partitioned into fixed width sets at startup; every `(bucket, key)` hashes (SipHash) to exactly one set; write all, read any quorum within the set. Operators shape the failure profile by ordering nodes and choosing the set width and parity count. |
-| **mTLS HTTP/2 cluster plane** | Every node is both a client and a server on the inter node RPC plane; HTTP/2 negotiated over mutual TLS (required for any cluster of more than one node). |
-| **Distributed locking** | A `dsync` style lock service serializes multipart and metadata mutations across nodes. |
-| **One static binary** | `phenomenald` (the storage node) and `phenomenal` (a local diagnostic and benchmark CLI). No external coordinator, no JVM, no GC. |
+<table>
+  <tr>
+    <td><b>S3 wire compatible</b></td>
+    <td>SigV4 authentication; bucket and object CRUD; batch delete; <code>ListObjects</code> v1 and v2; multipart upload; multi version objects. Works with the AWS CLI, <code>boto3</code>, the <code>aws-sdk-*</code> crates, <code>mc</code>, and other S3 clients.</td>
+  </tr>
+  <tr>
+    <td><b><code>io_uring</code> runtime</b></td>
+    <td><a href="https://github.com/compio-rs/compio"><code>compio</code></a> plus <a href="https://github.com/compio-rs/cyper"><code>cyper</code></a> / <code>cyper-axum</code>: hyper's HTTP/1.1 (and HTTP/2 for the cluster plane) on a completion based runtime. One pinned runtime per CPU, <code>SO_REUSEPORT</code> listeners, no tokio runtime spun up.</td>
+  </tr>
+  <tr>
+    <td><b>SIMD erasure coding</b></td>
+    <td><a href="https://crates.io/crates/reed-solomon-simd"><code>reed-solomon-simd</code></a> (FFT algorithm; SSSE3 / AVX2 / NEON auto detected). Shards are streamed stripe by stripe, so peak RAM per in flight PUT is one stripe, not the whole object.</td>
+  </tr>
+  <tr>
+    <td><b>MinIO <code>xl.meta</code> layout</b></td>
+    <td>v1.x metadata format. Objects up to 128 KiB are inlined directly into <code>xl.meta</code>; larger ones are written as Reed Solomon shards across the set.</td>
+  </tr>
+  <tr>
+    <td><b>Distributed by erasure sets</b></td>
+    <td>A flat pool of disks is partitioned into fixed width sets at startup; every <code>(bucket, key)</code> hashes (SipHash) to exactly one set; write all, read any quorum within the set. Operators shape the failure profile by ordering nodes and choosing the set width and parity count.</td>
+  </tr>
+  <tr>
+    <td><b>mTLS HTTP/2 cluster pane</b></td>
+    <td>Every node is both a client and a server on the inter node RPC plane; HTTP/2 negotiated over mutual TLS (required for any cluster of more than one node).</td>
+  </tr>
+  <tr>
+    <td><b>Distributed locking</b></td>
+    <td>A <code>dsync</code> style lock service serializes multipart and metadata mutations across nodes.</td>
+  </tr>
+  <tr>
+    <td><b>One static binary</b></td>
+    <td><code>phenomenald</code> (the storage node) and <code>phenomenal</code> (a local diagnostic and benchmark CLI). No external coordinator, no JVM, no GC.</td>
+  </tr>
+</table>
 
 ## Architecture
 
